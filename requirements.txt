@@ -1,0 +1,12 @@
+numpy
+opencv-python
+onnxruntime==1.19.1
+scikit-learn
+torch
+torchvision
+insightface
+fastapi
+uvicorn
+python-multipart
+scikit-learn
+opencv-python-headless

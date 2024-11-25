@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Verification System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .option-container {
+            margin: 20px 0;
+        }
+
+        .form-container {
+            display: none;
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-group {
+            margin: 10px 0;
+        }
+
+        .video-preview {
+            width: 100%;
+            max-width: 500px;
+            margin: 10px 0;
+        }
+
+        #response {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        #recorded-video-container {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            margin-top: 20px;
+        }
+
+        #recorded-video {
+            margin-top: 10px;
+            max-width: 500px;
+        }
+
+        .camera-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>User Verification System</h1>
+
+    <div class="option-container">
+        <input type="radio" name="option" value="video" id="video-option">
+        <label for="video-option">Create user from video</label><br>
+
+        <input type="radio" name="option" value="camera" id="camera-option">
+        <label for="camera-option">Create user from camera</label><br>
+
+        <input type="radio" name="option" value="verify" id="verify-option">
+        <label for="verify-option">Verify user</label>
+    </div>
+
+    <!-- Create user from video form -->
+    <div id="video-form" class="form-container">
+        <h2>Create User from Video</h2>
+        <form id="video-upload-form">
+            <div class="form-group">
+                <label for="video-name">User Name:</label>
+                <input type="text" id="video-name" required>
+            </div>
+            <div class="form-group">
+                <label for="video-file">Upload Video:</label>
+                <input type="file" id="video-file" accept="video/*" required>
+            </div>
+            <video id="video-preview" class="video-preview" controls style="display: none;"></video>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <!-- Create user from camera form -->
+    <div id="camera-form" class="form-container">
+        <h2>Create User from Camera</h2>
+        <div class="camera-controls">
+            <div class="form-group">
+                <label for="camera-name">User Name:</label>
+                <input type="text" id="camera-name" required>
+            </div>
+            <button type="button" id="camera-record-button">Start Camera Recording</button>
+        </div>
+        <video id="camera-live-preview" class="video-preview" autoplay playsinline></video>
+        <div id="recorded-video-container" style="display: none;">
+            <h3>Recorded Video</h3>
+            <video id="recorded-video" class="video-preview" controls></video>
+        </div>
+    </div>
+
+    <!-- Verify user form -->
+    <div id="verify-form" class="form-container">
+        <h2>Verify User</h2>
+        <form id="verify-upload-form">
+            <div class="form-group">
+                <label for="image-file">Upload Image:</label>
+                <input type="file" id="image-file" accept="image/*" required>
+            </div>
+            <button type="submit">Verify</button>
+        </form>
+    </div>
+
+    <div id="response"></div>
+
+    <script>
+        document.querySelectorAll('input[name="option"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                document.querySelectorAll('.form-container').forEach(form => {
+                    form.style.display = 'none';
+                });
+                document.getElementById(`${this.value}-form`).style.display = 'block';
+            });
+        });
+
+        // Video upload preview
+        document.getElementById('video-file').addEventListener('change', function (e) {
+            const video = document.getElementById('video-preview');
+            video.src = URL.createObjectURL(e.target.files[0]);
+            video.style.display = 'block';
+        });
+
+        document.getElementById('video-upload-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('name', document.getElementById('video-name').value);
+            formData.append('video', document.getElementById('video-file').files[0]);
+
+            try {
+                const response = await fetch('/create_user/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                showResponse(result);
+            } catch (error) {
+                showResponse({ error: 'Failed to submit form' });
+            }
+        });
+
+        // Live camera recording
+        let isRecording = false;
+        let mediaRecorder;
+        let videoStream;
+        let recordedChunks = [];
+
+        const cameraButton = document.getElementById('camera-record-button');
+        const livePreview = document.getElementById('camera-live-preview');
+        const recordedContainer = document.getElementById('recorded-video-container');
+        const recordedVideo = document.getElementById('recorded-video');
+
+        async function submitRecordedVideo(videoBlob) {
+            const formData = new FormData();
+            const name = document.getElementById('camera-name').value;
+            
+            if (!name) {
+                showResponse({ error: 'Please enter a user name' });
+                return;
+            }
+            
+            formData.append('name', name);
+            formData.append('video', videoBlob, 'recorded_video.mp4');
+
+            try {
+                const response = await fetch('/create_user_camera/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                showResponse(result);
+            } catch (error) {
+                showResponse({ error: 'Failed to process video' });
+            }
+        }
+
+        cameraButton.addEventListener('click', async () => {
+            try {
+                if (isRecording) {
+                    mediaRecorder.stop();
+                    videoStream.getTracks().forEach(track => track.stop());
+                    isRecording = false;
+                    cameraButton.textContent = 'Start Camera Recording';
+                } else {
+                    videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    livePreview.srcObject = videoStream;
+
+                    mediaRecorder = new MediaRecorder(videoStream, { mimeType: 'video/webm' });
+                    recordedChunks = [];
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            recordedChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                        const videoURL = URL.createObjectURL(videoBlob);
+                        recordedVideo.src = videoURL;
+                        recordedContainer.style.display = 'block';
+                        
+                        // Automatically submit the video
+                        submitRecordedVideo(videoBlob);
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    cameraButton.textContent = 'Stop Camera Recording';
+                }
+            } catch (error) {
+                alert('Failed to access the camera or record video.');
+                console.error(error);
+            }
+        });
+
+        // Verify user form submission
+        document.getElementById('verify-upload-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('image', document.getElementById('image-file').files[0]);
+
+            try {
+                const response = await fetch('/verify_user/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                showResponse(result);
+            } catch (error) {
+                showResponse({ error: 'Failed to verify user' });
+            }
+        });
+
+        function showResponse(result) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = result.message || result.error;
+            responseDiv.className = result.error ? 'error' : 'success';
+        }
+    </script>
+</body>
+
+</html>
