@@ -11,7 +11,7 @@ from tqdm import tqdm
 from insightface.app import FaceAnalysis
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-model_path = os.path.join(os.path.join(base_dir, "model"), "wf4m_mbf_rgb.onnx")
+model_path = os.path.join(os.path.join(base_dir, "model"), "wf4m_r18_rgb.onnx")
 
 model_pack_name = 'buffalo_l'
 provider = ['CUDAExecutionProvider']
@@ -23,6 +23,37 @@ detector.prepare(ctx_id=0, det_size=(640, 640))
 # Extract embedding model
 handler = insightface.model_zoo.get_model(model_path, provider=provider)
 handler.prepare(ctx_id=0)
+
+# def extract_frames(video_path=None):
+#     # Path to video
+#     video_path = video_path
+
+#     # Array to save frame and embedding
+#     frames = []
+
+#     # Read video if path exists, else open camera
+#     if video_path is not None:
+#         cap = cv2.VideoCapture(video_path)
+
+#     if not cap.isOpened():
+#         print("Cannot load video.")
+#     else:
+#         fps = cap.get(cv2.CAP_PROP_FPS)
+#         while True:
+#             ret, frame = cap.read()
+            
+#             if not ret:
+#                 break
+
+#             frames.append(frame)
+            
+#             if cv2.waitKey(15) & 0xFF == ord('q'):
+#                 break
+        
+#         cap.release()
+#         cv2.destroyAllWindows()
+
+#     return frames
 
 def extract_frames(video_path=None):
     # Path to video
@@ -39,16 +70,21 @@ def extract_frames(video_path=None):
         print("Cannot load video.")
     else:
         fps = cap.get(cv2.CAP_PROP_FPS)
+        frame_to_skip = int(fps) * 2   
+        frame_count = 0
         while True:
             ret, frame = cap.read()
             
             if not ret:
                 break
-
-            frames.append(frame)
+            
+            if frame_count % frame_to_skip ==0:
+                frames.append(frame)
             
             if cv2.waitKey(15) & 0xFF == ord('q'):
                 break
+            
+            frame_count += 1
         
         cap.release()
         cv2.destroyAllWindows()
