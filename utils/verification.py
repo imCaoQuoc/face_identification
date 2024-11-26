@@ -8,7 +8,7 @@ import insightface
 from insightface.app import FaceAnalysis
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-model_path = os.path.join(os.path.join(base_dir, "model"), "wf4m_mbf_rgb.onnx")
+model_path = os.path.join(os.path.join(base_dir, "model"), "wf4m_r18_rgb.onnx")
 
 model_pack_name = 'buffalo_l'
 provider = ['CUDAExecutionProvider']
