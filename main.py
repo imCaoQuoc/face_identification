@@ -12,29 +12,6 @@ import sys
 
 app = FastAPI()
 
-# def create_tmp_video() -> str:
-#     output_path = "/home/quocnc1/Documents/enroll_flow/project/download_video/output.mp4"
-#     cap = cv2.VideoCapture(0)
-#     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-#     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-#     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-#     out = cv2.VideoWriter(output_path, fourcc, 30.0, (frame_width, frame_height))
-
-#     while True:
-#         ret, frame = cap.read()
-#         if not ret:
-#             break
-#         out.write(frame)
-#         cv2.imshow('frame', frame)
-#         c = cv2.waitKey(1)
-#         if c & 0xFF == ord('q'):
-#             break
-#     cap.release()
-#     out.release()
-#     cv2.destroyAllWindows()
-
-#     return output_path
-
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=static_dir), name="static") 
 
