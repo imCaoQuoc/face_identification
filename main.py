@@ -51,7 +51,7 @@ async def create_user_endpoint(name: str = Form(...), video: UploadFile = File(.
         buffer.write(await video.read())
     
     result = create_user(video_path=video_path, user_name=name)
-    os.remove(video_path)  # Xóa file tạm sau khi xử lý xong
+    os.remove(video_path)
     
     if "error" in result:
         return {"error": result["error"]}
