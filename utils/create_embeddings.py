@@ -121,6 +121,29 @@ def is_left(pose):
 def is_right(pose):
     return (1.0 <= abs(pose[0]) <= 6.0 or 20.0 <= abs(pose[0]) <= 40.0) and 25.0 <= pose[1] <= 35.0
 
+def find_best_with_graph(embeddings, threshold=0.7):
+    if len(embeddings) == 0:
+        return None
+
+    # Build cosine similarity matrix
+    similarity_matrix = np.zeros((len(embeddings), len(embeddings)))
+    for i in range(len(embeddings)):
+        for j in range(len(embeddings)):
+            if i != j:
+                similarity_matrix[i][j] = cosine_similarity(embeddings[i], embeddings[j])
+
+    # Create adjacency matrix based on threshold
+    adjacency_matrix = (similarity_matrix > threshold).astype(int)
+
+    # Build graph using NetworkX
+    graph = nx.from_numpy_array(adjacency_matrix)
+
+    # Find node with highest degree centrality
+    degree_centrality = nx.degree_centrality(graph)
+    best_node = max(degree_centrality, key=degree_centrality.get)
+
+    return embeddings[best_node] 
+
 def get_best_embeddings(video_path=None):
     # Init dictionaries and lists to store embeddings
     storage_embeddings = []
