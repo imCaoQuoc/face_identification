@@ -175,42 +175,10 @@ def get_best_embeddings(video_path=None):
         if is_right(pose):
             rights.append(embedding)
 
-    # Calculate the centers (mean) of each group
-    center_frontal = np.mean(frontal, axis=0) if frontal else None
-    center_left = np.mean(lefts, axis=0) if lefts else None
-    center_right = np.mean(rights, axis=0) if rights else None
-
-    # Select best embedding based on cosine similarity to center
-    best_front = None
-    best_left = None
-    best_right = None
-    max_similarity = -1  # Initialize with -1 for comparison
-
-    # Finding the best frontal embedding
-    if center_frontal is not None:
-        for front in frontal:
-            similarity = cosine_similarity(front, center_frontal) 
-            if similarity > max_similarity:
-                max_similarity = similarity
-                best_front = front
-
-    # Finding the best left embedding
-    max_similarity = -1  # Reset max similarity for left
-    if center_left is not None:
-        for left in lefts:
-            similarity = cosine_similarity(left, center_left) 
-            if similarity > max_similarity:
-                max_similarity = similarity
-                best_left = left
-
-    # Finding the best right embedding
-    max_similarity = -1  # Reset max similarity for right
-    if center_right is not None:
-        for right in rights:
-            similarity = cosine_similarity(right, center_right) 
-            if similarity > max_similarity:
-                max_similarity = similarity
-                best_right = right
+    # Use graph-based method to find the best embedding in each group
+    best_front = find_best_with_graph(frontal, threshold=0.7)
+    best_left = find_best_with_graph(lefts, threshold=0.7)
+    best_right = find_best_with_graph(rights, threshold=0.7)
 
     return best_front, best_left, best_right
         
