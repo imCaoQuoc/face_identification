@@ -129,7 +129,7 @@ def find_best_with_graph(embeddings, threshold=0.7):
 
     # Build cosine similarity matrix
     similarity_matrix = np.zeros((len(embeddings), len(embeddings)))
-    for i in range(len(embeddings)):
+    for i in tqdm(range(len(embeddings)), desc="Building cosine similarity matrix..."):
         for j in range(len(embeddings)):
             if i != j:
                 similarity_matrix[i][j] = cosine_similarity(embeddings[i], embeddings[j])
@@ -156,7 +156,7 @@ def get_best_embeddings(video_path=None):
     
     # Extract embedding from frame & append to array
     frames = extract_frames(video_path)
-    for frame in tqdm(frames):
+    for frame in tqdm(frames, desc="Detecting and Extracting embeddings..."):
         embedding, pose = detect_extract(frame)
         if embedding is not None:
             storage_embeddings.append(embedding)
@@ -166,7 +166,7 @@ def get_best_embeddings(video_path=None):
     storage_embeddings_as_lists = [embedding.tolist() for embedding in storage_embeddings]
 
     # Separate embeddings into frontal, left, and right groups
-    for i in tqdm(range(len(poses))):
+    for i in tqdm(range(len(poses)), desc="Choosing embeddings..."):
         pose = poses[i]
         embedding = storage_embeddings[i]
         
