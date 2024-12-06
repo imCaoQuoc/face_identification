@@ -8,6 +8,8 @@ import numpy as np
 import insightface
 import torch.nn as nn
 from tqdm import tqdm
+import networkx as nx
+import matplotlib.pyplot as plt
 from insightface.app import FaceAnalysis
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
