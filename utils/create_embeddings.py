@@ -70,7 +70,7 @@ def extract_frames(video_path=None):
         print("Cannot load video.")
     else:
         fps = cap.get(cv2.CAP_PROP_FPS)
-        frame_to_skip = int(fps) * 2   
+        frame_to_skip = int(fps) * 1  
         frame_count = 0
         while True:
             ret, frame = cap.read()
