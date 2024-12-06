@@ -115,13 +115,13 @@ def cosine_similarity(embedding1, embedding2):
     return similarity.item()
 
 def is_frontal(pose):
-    return 1.0 <= abs(pose[0]) <= 40.0 and 0.0 <= abs(pose[1]) <= 9.0
+    return 0.0 <= abs(pose[0]) <= 40.0 and 0.0 <= abs(pose[1]) <= 9.0
 
 def is_left(pose):
-    return (1.0 <= abs(pose[0]) <= 6.0 or 20.0 <= abs(pose[0]) <= 40.0) and -29.0 <= pose[1] <= -20.0
+    return 0.0 <= abs(pose[0]) <= 40.0 and -45.0 <= pose[1] <= 0.0
 
 def is_right(pose):
-    return (1.0 <= abs(pose[0]) <= 6.0 or 20.0 <= abs(pose[0]) <= 40.0) and 25.0 <= pose[1] <= 35.0
+    return 0.0 <= abs(pose[0]) <= 40.0 and 0 <= pose[1] <= 45.0
 
 def find_best_with_graph(embeddings, threshold=0.7):
     if len(embeddings) == 0:
@@ -202,6 +202,7 @@ def create_user(video_path=None, user_name=None):
 
     # Creating new user if user_name does not exist
     embeddings = get_best_embeddings(video_path)
+    print(embeddings)
     embeddings = [embedding.tolist() for embedding in embeddings]
     new_user = {
         "name": user_name,
