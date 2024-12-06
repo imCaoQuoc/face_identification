@@ -50,7 +50,7 @@ def extract_frames(video_path=None):
         print("Cannot load video.")
     else:
         fps = int(cap.get(cv2.CAP_PROP_FPS))
-        frame_to_skip = fps * 2
+        frame_to_skip = fps * 1
         frame_count = 0
         while True:
             ret, frame = cap.read()
@@ -91,4 +91,4 @@ def get_best_embeddings(video_path=None, output_file='poses.json'):
     print(f"Đã thêm {len(frames)} pose vào file {output_file}")
 
 # Sử dụng hàm với video đầu vào
-get_best_embeddings("/home/quocnc1/Documents/enroll_flow/__pycache__/toanbd1fw152_240405_session2.mp4")
+get_best_embeddings("/home/quocnc1/Documents/arcface_test/toanbd1fw152_240405_session2.mp4")
